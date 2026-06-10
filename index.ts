@@ -112,23 +112,66 @@ const runTool = (tool: ToolCallItem) => {
   throw unreachable;
 };
 
+const streamOpenAIResponse = async (
+  openai: OpenAI,
+  input: ResponseInput,
+): Promise<{
+  outputText: string;
+  output: ResponseOutputItem[];
+}> => {
+  const stream = await openai.responses.create({
+    model,
+    input,
+    tools,
+    stream: true,
+  });
+
+  let outputText = "";
+  let output: ResponseOutputItem[] = [];
+
+  for await (const event of stream) {
+    switch (event.type) {
+      case "response.output_text.delta": {
+        process.stdout.write(event.delta);
+        outputText += event.delta;
+        break;
+      }
+
+      case "response.completed": {
+        output = event.response.output;
+        break;
+      }
+
+      case "response.failed": {
+        throw new Error(
+          event.response.error?.message ?? "OpenAI response failed",
+        );
+      }
+
+      default:
+        break;
+    }
+  }
+
+  return { outputText, output };
+};
+
 const processInput = async (
   openai: OpenAI,
   prompt: string,
   conversation: ResponseInput,
 ) => {
-  const response = await openai.responses.create({
-    model,
-    input: [...conversation, UserMessage(prompt)],
-    tools,
-  });
-  // TODO: handle RateLimitError
+  const currentInput: ResponseInput = [...conversation, UserMessage(prompt)];
+  const firstResponse = await streamOpenAIResponse(openai, currentInput);
 
-  const inputs = response.output.filter(isCarryForwardItem);
-  const toolCalls = response.output.filter(isToolCallItem);
+  const inputs = firstResponse.output.filter(isCarryForwardItem);
+  const toolCalls = firstResponse.output.filter(isToolCallItem);
   const toolOutputs: ResponseInputItem[] = [];
 
-  if (!toolCalls.length) return response.output_text;
+  if (!toolCalls.length) {
+    process.stdout.write("\n");
+    return firstResponse.outputText;
+  }
 
   for (const item of toolCalls) {
     const response = await runTool(item);
@@ -139,13 +182,14 @@ const processInput = async (
     });
   }
 
-  const finalResponse = await openai.responses.create({
-    model,
-    input: [...inputs, ...toolOutputs],
-    tools,
-  });
+  const finalResponse = await streamOpenAIResponse(openai, [
+    ...currentInput,
+    ...inputs,
+    ...toolOutputs,
+  ]);
 
-  return finalResponse.output_text;
+  process.stdout.write("\n");
+  return finalResponse.outputText;
 };
 
 const main = async () => {
@@ -167,7 +211,6 @@ const main = async () => {
     const response = await processInput(openai, prompt, conversation);
     conversation.push(UserMessage(prompt));
     conversation.push(AssistantMessage(response));
-    console.log(response);
   }
 };
 
