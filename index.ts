@@ -9,19 +9,28 @@ const getInput = async () => {
   }
 };
 
-const isExit = (message: string | false) => {
+const isExit = (message: string | false): message is false => {
   if (message === false) return true;
   if (["quit", "exit", "q"].includes(message)) return true;
   return false;
 };
 
+const processInput = async (message: string, _conversation: string[]) => {
+  return message;
+};
+
 const main = async () => {
+  const conversation: string[] = [];
   console.debug("Loaded", tools.length, "tools");
 
   while (true) {
     const userInput = await getInput();
     if (isExit(userInput)) return;
-    console.log(userInput);
+
+    const response = await processInput(userInput, conversation);
+    conversation.push(userInput);
+    conversation.push(response);
+    console.log(response);
   }
 };
 
