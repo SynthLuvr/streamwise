@@ -1,5 +1,12 @@
 import { input } from "@inquirer/prompts";
+import { type } from "arktype";
 import { tools } from "./tools";
+
+const OpenAIApiKey = type(
+  "string > 20",
+  "=>",
+  type(/^sk-(?:proj-)?[a-z0-9_-]{20,}$/i),
+);
 
 const getInput = async () => {
   try {
@@ -19,6 +26,13 @@ const processInput = async (message: string, _conversation: string[]) =>
   message;
 
 const main = async () => {
+  const apiKey = OpenAIApiKey(process.env["OPENAI_API_KEY"]);
+  if (apiKey instanceof type.errors) {
+    console.error("OPENAI_API_KEY environment variable", apiKey.summary);
+    process.exitCode = 1;
+    return;
+  }
+
   const conversation: string[] = [];
   console.debug("Loaded", tools.length, "tools");
 
