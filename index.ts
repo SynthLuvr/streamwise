@@ -3,7 +3,18 @@ import { type } from "arktype";
 import { OpenAI } from "openai";
 import { tools } from "./tools";
 
+const model = "gpt-5.4-nano" as const;
+
 type ResponseInput = OpenAI.Responses.ResponseInput;
+type ResponseInputItem = OpenAI.Responses.ResponseInputItem;
+type ResponseOutputItem = OpenAI.Responses.ResponseOutputItem;
+
+type CarryForwardItem = Extract<
+  ResponseOutputItem,
+  { type: "message" | "function_call" | "reasoning" }
+>;
+
+type ToolCallItem = Extract<ResponseOutputItem, { type: "function_call" }>;
 
 type Message = {
   role: "assistant" | "user";
@@ -26,6 +37,16 @@ const OpenAIApiKey = type(
   type(/^sk-(?:proj-)?[a-z0-9_-]{20,}$/i),
 );
 
+const isCarryForwardItem = (
+  item: ResponseOutputItem,
+): item is CarryForwardItem =>
+  item.type === "message" ||
+  item.type === "function_call" ||
+  item.type === "reasoning";
+
+const isToolCallItem = (item: ResponseOutputItem): item is ToolCallItem =>
+  item.type === "function_call";
+
 const getInput = async () => {
   try {
     return (await input({ message: "Ask anything" })).trim();
@@ -46,13 +67,34 @@ const processInput = async (
   conversation: ResponseInput,
 ) => {
   const response = await openai.responses.create({
-    model: "gpt-5.4-nano",
+    model,
     input: [...conversation, UserMessage(prompt)],
     tools,
   });
   // TODO: handle RateLimitError
 
-  return response.output_text;
+  const inputs = response.output.filter(isCarryForwardItem);
+  const toolCalls = response.output.filter(isToolCallItem);
+  const toolOutputs: ResponseInputItem[] = [];
+
+  if (!toolOutputs.length) return response.output_text;
+
+  for (const item of toolCalls) {
+    // TODO: run tool
+    toolOutputs.push({
+      type: "function_call_output",
+      call_id: item.call_id,
+      output: "TODO",
+    });
+  }
+
+  const finalResponse = await openai.responses.create({
+    model,
+    input: [...inputs, ...toolOutputs],
+    tools,
+  });
+
+  return finalResponse.output_text;
 };
 
 const main = async () => {
