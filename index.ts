@@ -14,7 +14,9 @@ type CarryForwardItem = Extract<
   { type: "message" | "function_call" | "reasoning" }
 >;
 
-type ToolCallItem = Extract<ResponseOutputItem, { type: "function_call" }>;
+type ToolCallItem = Extract<ResponseOutputItem, { type: "function_call" }> & {
+  name: "get_weather" | "research_topic";
+};
 
 type Message = {
   role: "assistant" | "user";
@@ -45,7 +47,8 @@ const isCarryForwardItem = (
   item.type === "reasoning";
 
 const isToolCallItem = (item: ResponseOutputItem): item is ToolCallItem =>
-  item.type === "function_call";
+  item.type === "function_call" &&
+  (item.name === "get_weather" || item.name === "research_topic");
 
 const getInput = async () => {
   try {
@@ -80,6 +83,7 @@ const processInput = async (
   if (!toolCalls.length) return response.output_text;
 
   for (const item of toolCalls) {
+    item.name;
     // TODO: run tool
     toolOutputs.push({
       type: "function_call_output",
