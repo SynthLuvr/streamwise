@@ -1,0 +1,10 @@
+{
+  "options": {
+    "typeAware": true
+  },
+  "rules": {
+    "typescript/no-floating-promises": "error",
+    "typescript/return-await": ["error", "in-try-catch"]
+  },
+  "ignorePatterns": ["**/*.js", "**/node_modules/**"]
+}
