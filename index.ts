@@ -2,6 +2,7 @@ import { input } from "@inquirer/prompts";
 import { type } from "arktype";
 import ky from "ky";
 import { OpenAI } from "openai";
+import pRetry, { AbortError } from "p-retry";
 import { tools } from "./tools";
 
 const model = "gpt-5.4-nano" as const;
@@ -72,12 +73,47 @@ const isExit = (message: string | false): message is false => {
   return false;
 };
 
-// TODO: add retry and error handling; return "unknown error" if unable to
-// handle
 const callApi = async (
   endpoint: string,
   searchParams: Record<string, string>,
-) => await api.get(endpoint, { searchParams }).text();
+) => {
+  try {
+    return await pRetry(
+      async () => {
+        try {
+          return await api.get(endpoint, { searchParams }).text();
+        } catch (error) {
+          const status =
+            typeof error === "object" &&
+            error !== null &&
+            "response" in error &&
+            error.response instanceof Response
+              ? error.response.status
+              : undefined;
+
+          // Don't retry client errors, except rate limits.
+          if (
+            status !== undefined &&
+            status >= 400 &&
+            status < 500 &&
+            status !== 429
+          )
+            throw new AbortError(error as Error);
+
+          throw error;
+        }
+      },
+      {
+        retries: 3,
+        factor: 2,
+        minTimeout: 500,
+        maxTimeout: 5_000,
+      },
+    );
+  } catch {
+    return "unknown error";
+  }
+};
 
 const JsonArguments = type("string").pipe((v) => JSON.parse(v));
 

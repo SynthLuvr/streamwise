@@ -23,7 +23,8 @@
     "@inquirer/prompts": "^8.5.2",
     "arktype": "^2.2.0",
     "ky": "^2.0.2",
-    "openai": "^6.42.0"
+    "openai": "^6.42.0",
+    "p-retry": "^8.0.0"
   },
   "devDependencies": {
     "@ast-grep/cli": "^0.43.0",
@@ -31,8 +32,8 @@
     "@types/node": "^25.9.2",
     "convert-to-arrow": "^1.0.21",
     "npm-run-all2": "^9.0.1",
-    "oxlint-tsgolint": "^0.23.0",
     "oxlint": "^1.69.0",
+    "oxlint-tsgolint": "^0.23.0",
     "tsx": "^4.22.4",
     "typescript": "^6.0.3",
     "vitest": "^4.1.8"
