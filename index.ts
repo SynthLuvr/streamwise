@@ -54,11 +54,11 @@ const main = async () => {
   console.debug("Loaded", tools.length, "tools");
 
   while (true) {
-    const userInput = await getInput();
-    if (isExit(userInput)) return;
+    const prompt = await getInput();
+    if (isExit(prompt)) return;
 
-    const response = await processInput(userInput, conversation);
-    conversation.push(UserMessage(userInput));
+    const response = await processInput(prompt, conversation);
+    conversation.push(UserMessage(prompt));
     conversation.push(AssistantMessage(response));
     console.log(response);
   }
