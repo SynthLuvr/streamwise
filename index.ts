@@ -10,7 +10,7 @@ const OpenAIApiKey = type(
 
 const getInput = async () => {
   try {
-    return await input({ message: "Ask anything" });
+    return (await input({ message: "Ask anything" })).trim();
   } catch {
     return false;
   }
@@ -18,7 +18,7 @@ const getInput = async () => {
 
 const isExit = (message: string | false): message is false => {
   if (message === false) return true;
-  if (["quit", "exit", "q"].includes(message)) return true;
+  if (["", "quit", "exit", "q"].includes(message)) return true;
   return false;
 };
 
