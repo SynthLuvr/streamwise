@@ -245,7 +245,6 @@ const main = async () => {
 
   const openai = new OpenAI({ apiKey });
   const conversation: ResponseInput = [];
-  console.debug("Loaded", tools.length, "tools");
 
   while (true) {
     const prompt = await getInput();
