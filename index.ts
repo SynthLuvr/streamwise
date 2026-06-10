@@ -1,9 +1,17 @@
 import { input } from "@inquirer/prompts";
 import { type } from "arktype";
+import ky from "ky";
 import { OpenAI } from "openai";
 import { tools } from "./tools";
 
 const model = "gpt-5.4-nano" as const;
+
+const api = ky.create({
+  baseUrl: "https://elyos-interview-907656039105.europe-west2.run.app",
+  headers: {
+    "X-API-Key": "elyos2025",
+  },
+});
 
 type ResponseInput = OpenAI.Responses.ResponseInput;
 type ResponseInputItem = OpenAI.Responses.ResponseInputItem;
@@ -64,6 +72,25 @@ const isExit = (message: string | false): message is false => {
   return false;
 };
 
+const WeatherArguments = type("string")
+  .pipe((v) => JSON.parse(v))
+  .pipe(
+    type({
+      location: "string",
+    }),
+  );
+
+const runWeather = async (tool: ToolCallItem) => {
+  const args = WeatherArguments.assert(tool.arguments);
+  return await api.get("/weather", { searchParams: args }).text();
+};
+
+const runTool = (tool: ToolCallItem) => {
+  if (tool.name === "get_weather") return runWeather(tool);
+
+  throw new Error("Not implemented");
+};
+
 const processInput = async (
   openai: OpenAI,
   prompt: string,
@@ -83,12 +110,11 @@ const processInput = async (
   if (!toolCalls.length) return response.output_text;
 
   for (const item of toolCalls) {
-    item.name;
-    // TODO: run tool
+    const response = await runTool(item);
     toolOutputs.push({
       type: "function_call_output",
       call_id: item.call_id,
-      output: "TODO",
+      output: response,
     });
   }
 
