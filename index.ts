@@ -10,7 +10,7 @@ const model = "gpt-5.4-nano" as const;
 const api = ky.create({
   baseUrl: "https://elyos-interview-907656039105.europe-west2.run.app",
   headers: {
-    "X-API-Key": "elyos2025",
+    "X-API-Key": process.env["ELYOS_API_KEY"] ?? "",
   },
 });
 
@@ -229,6 +229,13 @@ const processInput = async (
 };
 
 const main = async () => {
+  const elyosApiKey = type("string > 0")(process.env["ELYOS_API_KEY"]);
+  if (elyosApiKey instanceof type.errors) {
+    console.error("ELYOS_API_KEY environment variable", elyosApiKey.summary);
+    process.exitCode = 1;
+    return;
+  }
+
   const apiKey = OpenAIApiKey(process.env["OPENAI_API_KEY"]);
   if (apiKey instanceof type.errors) {
     console.error("OPENAI_API_KEY environment variable", apiKey.summary);
@@ -250,4 +257,4 @@ const main = async () => {
   }
 };
 
-main();
+void main();
