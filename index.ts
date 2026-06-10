@@ -52,7 +52,7 @@ const processInput = async (
   });
   // TODO: handle RateLimitError
 
-  return response.output.join("\n");
+  return response.output_text;
 };
 
 const main = async () => {
