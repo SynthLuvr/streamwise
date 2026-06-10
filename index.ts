@@ -1,5 +1,6 @@
 import { input } from "@inquirer/prompts";
 import { type } from "arktype";
+import { OpenAI } from "openai";
 import { tools } from "./tools";
 
 type Role = "assistant" | "user";
@@ -39,8 +40,19 @@ const isExit = (message: string | false): message is false => {
   return false;
 };
 
-const processInput = async (message: string, _conversation: Message[]) =>
-  message;
+const processInput = async (
+  openai: OpenAI,
+  prompt: string,
+  conversation: Message[],
+) => {
+  const response = await openai.responses.create({
+    model: "gpt-5.4-nano",
+    input: [...conversation, UserMessage(prompt)],
+    tools,
+  });
+
+  return response.output.join("\n");
+};
 
 const main = async () => {
   const apiKey = OpenAIApiKey(process.env["OPENAI_API_KEY"]);
@@ -50,6 +62,7 @@ const main = async () => {
     return;
   }
 
+  const openai = new OpenAI({ apiKey });
   const conversation: Message[] = [];
   console.debug("Loaded", tools.length, "tools");
 
@@ -57,7 +70,7 @@ const main = async () => {
     const prompt = await getInput();
     if (isExit(prompt)) return;
 
-    const response = await processInput(prompt, conversation);
+    const response = await processInput(openai, prompt, conversation);
     conversation.push(UserMessage(prompt));
     conversation.push(AssistantMessage(response));
     console.log(response);
