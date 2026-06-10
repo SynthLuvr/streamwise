@@ -50,6 +50,7 @@ const processInput = async (
     input: [...conversation, UserMessage(prompt)],
     tools,
   });
+  // TODO: handle RateLimitError
 
   return response.output.join("\n");
 };
