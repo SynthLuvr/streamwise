@@ -2,6 +2,23 @@ import { input } from "@inquirer/prompts";
 import { type } from "arktype";
 import { tools } from "./tools";
 
+type Role = "assistant" | "user";
+
+type Message = {
+  role: Role;
+  content: string;
+};
+
+const AssistantMessage = (message: string): Message => ({
+  role: "assistant",
+  content: message,
+});
+
+const UserMessage = (message: string): Message => ({
+  role: "user",
+  content: message,
+});
+
 const OpenAIApiKey = type(
   "string > 20",
   "=>",
@@ -22,7 +39,7 @@ const isExit = (message: string | false): message is false => {
   return false;
 };
 
-const processInput = async (message: string, _conversation: string[]) =>
+const processInput = async (message: string, _conversation: Message[]) =>
   message;
 
 const main = async () => {
@@ -33,7 +50,7 @@ const main = async () => {
     return;
   }
 
-  const conversation: string[] = [];
+  const conversation: Message[] = [];
   console.debug("Loaded", tools.length, "tools");
 
   while (true) {
@@ -41,8 +58,8 @@ const main = async () => {
     if (isExit(userInput)) return;
 
     const response = await processInput(userInput, conversation);
-    conversation.push(userInput);
-    conversation.push(response);
+    conversation.push(UserMessage(userInput));
+    conversation.push(AssistantMessage(response));
     console.log(response);
   }
 };
