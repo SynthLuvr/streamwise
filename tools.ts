@@ -1,40 +1,40 @@
 import type OpenAI from "openai";
 
-export const tools = [
+export const tools: OpenAI.Responses.Tool[] = [
   {
     type: "function",
-    function: {
-      name: "get_weather",
-      description: "Get current weather for a city. Fast response.",
-      parameters: {
-        type: "object",
-        properties: {
-          location: {
-            type: "string",
-            description: "City name, e.g. London, Tokyo",
-          },
+    name: "get_weather",
+    description: "Get current weather for a city. Fast response.",
+    parameters: {
+      type: "object",
+      properties: {
+        location: {
+          type: "string",
+          description: "City name, e.g. London, Tokyo",
         },
-        required: ["location"],
       },
+      required: ["location"],
+      additionalProperties: false,
     },
+    strict: true,
   },
   {
     type: "function",
-    function: {
-      name: "research_topic",
-      description:
-        "Research a topic in depth. Takes 3-8 seconds. Use for questions requiring detailed research.",
-      parameters: {
-        type: "object",
-        properties: {
-          topic: {
-            type: "string",
-            description:
-              "Topic to research, e.g. 'solar energy', 'climate change'",
-          },
+    name: "research_topic",
+    description:
+      "Research a topic in depth. Takes 3-8 seconds. Use for questions requiring detailed research.",
+    parameters: {
+      type: "object",
+      properties: {
+        topic: {
+          type: "string",
+          description:
+            "Topic to research, e.g. 'solar energy', 'climate change'",
         },
-        required: ["topic"],
       },
+      required: ["topic"],
+      additionalProperties: false,
     },
+    strict: true,
   },
-] satisfies OpenAI.Chat.Completions.ChatCompletionTool[];
+];
