@@ -72,6 +72,13 @@ const isExit = (message: string | false): message is false => {
   return false;
 };
 
+// TODO: add retry and error handling; return "unknown error" if unable to
+// handle
+const callApi = async (
+  endpoint: string,
+  searchParams: Record<string, string>,
+) => await api.get(endpoint, { searchParams }).text();
+
 const JsonArguments = type("string").pipe((v) => JSON.parse(v));
 
 const WeatherArguments = JsonArguments.pipe(
@@ -82,7 +89,7 @@ const WeatherArguments = JsonArguments.pipe(
 
 const runWeather = async (tool: ToolCallItem) => {
   const args = WeatherArguments.assert(tool.arguments);
-  return await api.get("/weather", { searchParams: args }).text();
+  return callApi("/weather", args);
 };
 
 const ResearchArguments = JsonArguments.pipe(
@@ -94,7 +101,7 @@ const ResearchArguments = JsonArguments.pipe(
 const runResearch = async (tool: ToolCallItem) => {
   const args = ResearchArguments.assert(tool.arguments);
   console.debug("Researching", args.topic);
-  return await api.get("/research", { searchParams: args }).text();
+  return callApi("/research", args);
 };
 
 const runTool = (tool: ToolCallItem) => {
