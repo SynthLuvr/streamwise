@@ -85,10 +85,26 @@ const runWeather = async (tool: ToolCallItem) => {
   return await api.get("/weather", { searchParams: args }).text();
 };
 
+const ResearchArguments = type("string")
+  .pipe((v) => JSON.parse(v))
+  .pipe(
+    type({
+      topic: "string",
+    }),
+  );
+
+const runResearch = async (tool: ToolCallItem) => {
+  const args = ResearchArguments.assert(tool.arguments);
+  console.debug("Researching", args.topic);
+  return await api.get("/research", { searchParams: args }).text();
+};
+
 const runTool = (tool: ToolCallItem) => {
   if (tool.name === "get_weather") return runWeather(tool);
+  if (tool.name === "research_topic") return runResearch(tool);
 
-  throw new Error("Not implemented");
+  const unreachable: never = tool.name;
+  throw unreachable;
 };
 
 const processInput = async (
