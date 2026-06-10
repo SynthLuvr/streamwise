@@ -15,9 +15,8 @@ const isExit = (message: string | false): message is false => {
   return false;
 };
 
-const processInput = async (message: string, _conversation: string[]) => {
-  return message;
-};
+const processInput = async (message: string, _conversation: string[]) =>
+  message;
 
 const main = async () => {
   const conversation: string[] = [];
