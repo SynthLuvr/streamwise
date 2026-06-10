@@ -3,10 +3,10 @@ import { type } from "arktype";
 import { OpenAI } from "openai";
 import { tools } from "./tools";
 
-type Role = "assistant" | "user";
+type ResponseInput = OpenAI.Responses.ResponseInput;
 
 type Message = {
-  role: Role;
+  role: "assistant" | "user";
   content: string;
 };
 
@@ -43,7 +43,7 @@ const isExit = (message: string | false): message is false => {
 const processInput = async (
   openai: OpenAI,
   prompt: string,
-  conversation: Message[],
+  conversation: ResponseInput,
 ) => {
   const response = await openai.responses.create({
     model: "gpt-5.4-nano",
@@ -64,7 +64,7 @@ const main = async () => {
   }
 
   const openai = new OpenAI({ apiKey });
-  const conversation: Message[] = [];
+  const conversation: ResponseInput = [];
   console.debug("Loaded", tools.length, "tools");
 
   while (true) {
