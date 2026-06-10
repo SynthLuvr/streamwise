@@ -77,7 +77,7 @@ const processInput = async (
   const toolCalls = response.output.filter(isToolCallItem);
   const toolOutputs: ResponseInputItem[] = [];
 
-  if (!toolOutputs.length) return response.output_text;
+  if (!toolCalls.length) return response.output_text;
 
   for (const item of toolCalls) {
     // TODO: run tool
