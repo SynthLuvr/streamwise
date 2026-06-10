@@ -72,26 +72,24 @@ const isExit = (message: string | false): message is false => {
   return false;
 };
 
-const WeatherArguments = type("string")
-  .pipe((v) => JSON.parse(v))
-  .pipe(
-    type({
-      location: "string",
-    }),
-  );
+const JsonArguments = type("string").pipe((v) => JSON.parse(v));
+
+const WeatherArguments = JsonArguments.pipe(
+  type({
+    location: "string",
+  }),
+);
 
 const runWeather = async (tool: ToolCallItem) => {
   const args = WeatherArguments.assert(tool.arguments);
   return await api.get("/weather", { searchParams: args }).text();
 };
 
-const ResearchArguments = type("string")
-  .pipe((v) => JSON.parse(v))
-  .pipe(
-    type({
-      topic: "string",
-    }),
-  );
+const ResearchArguments = JsonArguments.pipe(
+  type({
+    topic: "string",
+  }),
+);
 
 const runResearch = async (tool: ToolCallItem) => {
   const args = ResearchArguments.assert(tool.arguments);
