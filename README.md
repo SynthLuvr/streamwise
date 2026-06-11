@@ -67,3 +67,17 @@ Responses are streamed directly to the CLI.
 
 Markdown is shown as plain, unformatted text in the console. Formatting
 the markdown output was avoided to keep the implementation simple.
+
+### Testing
+
+Tests have not been added for this project.
+
+The original specification indicated that tests were not required, so I
+intentionally kept the implementation as simple as possible and avoided
+spending additional time on test infrastructure.
+
+Testing an interactive streaming CLI also requires a fair amount of
+setup and boilerplate, particularly around mocking stdin/stdout,
+handling streaming responses, and simulating `SIGINT` behavior. Given
+the scope of the task, I prioritized the core functionality and
+robustness of the implementation over automated test coverage.
