@@ -1,4 +1,4 @@
-import { isCancel, log, text } from "@clack/prompts";
+import { isCancel, log, outro, text } from "@clack/prompts";
 import { type } from "arktype";
 import ky from "ky";
 import { OpenAI } from "openai";
@@ -246,7 +246,10 @@ const main = async () => {
 
   while (true) {
     const prompt = await getInput();
-    if (isExit(prompt)) return;
+    if (isExit(prompt)) {
+      outro("Goodbye!");
+      return;
+    }
 
     const response = await processInput(openai, prompt, conversation);
     conversation.push(UserMessage(prompt));
