@@ -5,6 +5,21 @@ import { OpenAI } from "openai";
 import yoctoSpinner from "yocto-spinner";
 import { tools } from "./tools";
 
+type ResponseInput = OpenAI.Responses.ResponseInput;
+type ResponseInputItem = OpenAI.Responses.ResponseInputItem;
+type ResponseOutputItem = OpenAI.Responses.ResponseOutputItem;
+type CarryForwardItem = Extract<
+  ResponseOutputItem,
+  { type: "message" | "function_call" | "reasoning" }
+>;
+type ToolCallItem = Extract<ResponseOutputItem, { type: "function_call" }> & {
+  name: "get_weather" | "research_topic";
+};
+type Message = {
+  role: "assistant" | "user";
+  content: string;
+};
+
 const model = "gpt-5.4-nano" as const;
 
 const api = ky.create({
@@ -19,24 +34,6 @@ const api = ky.create({
     retryOnTimeout: true,
   },
 });
-
-type ResponseInput = OpenAI.Responses.ResponseInput;
-type ResponseInputItem = OpenAI.Responses.ResponseInputItem;
-type ResponseOutputItem = OpenAI.Responses.ResponseOutputItem;
-
-type CarryForwardItem = Extract<
-  ResponseOutputItem,
-  { type: "message" | "function_call" | "reasoning" }
->;
-
-type ToolCallItem = Extract<ResponseOutputItem, { type: "function_call" }> & {
-  name: "get_weather" | "research_topic";
-};
-
-type Message = {
-  role: "assistant" | "user";
-  content: string;
-};
 
 const AssistantMessage = (message: string): Message => ({
   role: "assistant",
@@ -105,23 +102,13 @@ const callApi = async (
 };
 
 const JsonArguments = type("string").pipe((v) => JSON.parse(v));
-
-const WeatherArguments = JsonArguments.pipe(
-  type({
-    location: "string",
-  }),
-);
+const WeatherArguments = JsonArguments.pipe(type({ location: "string" }));
+const ResearchArguments = JsonArguments.pipe(type({ topic: "string" }));
 
 const runWeather = async (tool: ToolCallItem, controller: AbortController) => {
   const args = WeatherArguments.assert(tool.arguments);
   return callApi("/weather", args, controller);
 };
-
-const ResearchArguments = JsonArguments.pipe(
-  type({
-    topic: "string",
-  }),
-);
 
 const runResearch = async (tool: ToolCallItem, controller: AbortController) => {
   const args = ResearchArguments.assert(tool.arguments);
