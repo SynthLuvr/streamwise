@@ -1,6 +1,6 @@
 import { isCancel, log, outro, spinner, text } from "@clack/prompts";
 import { type } from "arktype";
-import ky from "ky";
+import ky, { HTTPError } from "ky";
 import { OpenAI } from "openai";
 import pRetry, { AbortError } from "p-retry";
 import { tools } from "./tools";
@@ -81,22 +81,17 @@ const callApi = async (
         try {
           return await api.get(endpoint, { searchParams }).text();
         } catch (error) {
-          const status =
-            typeof error === "object" &&
-            error !== null &&
-            "response" in error &&
-            error.response instanceof Response
-              ? error.response.status
-              : undefined;
-
-          // Don't retry client errors, except rate limits.
-          if (
-            status !== undefined &&
-            status >= 400 &&
-            status < 500 &&
-            status !== 429
-          )
-            throw new AbortError(error as Error);
+          if (error instanceof HTTPError) {
+            // Don't retry client errors, except rate limits
+            const status = error.response.status;
+            if (
+              status !== undefined &&
+              status >= 400 &&
+              status < 500 &&
+              status !== 429
+            )
+              throw new AbortError(error);
+          }
 
           throw error;
         }
