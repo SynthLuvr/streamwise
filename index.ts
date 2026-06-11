@@ -1,4 +1,4 @@
-import { isCancel, log, outro, text } from "@clack/prompts";
+import { isCancel, log, outro, spinner, text } from "@clack/prompts";
 import { type } from "arktype";
 import ky from "ky";
 import { OpenAI } from "openai";
@@ -138,9 +138,22 @@ const runResearch = async (tool: ToolCallItem) => {
   return callApi("/research", args);
 };
 
-const runTool = (tool: ToolCallItem) => {
-  if (tool.name === "get_weather") return runWeather(tool);
-  if (tool.name === "research_topic") return runResearch(tool);
+const runTool = async (tool: ToolCallItem) => {
+  const s = spinner();
+
+  if (tool.name === "get_weather") {
+    s.start("Calling weather tool");
+    const output = await runWeather(tool);
+    s.stop("Retrieved weather");
+    return output;
+  }
+
+  if (tool.name === "research_topic") {
+    s.start("Calling research tool");
+    const output = await runResearch(tool);
+    s.stop("Retrieved research");
+    return output;
+  }
 
   const unreachable: never = tool.name;
   throw unreachable;
