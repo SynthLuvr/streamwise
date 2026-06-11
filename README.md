@@ -31,6 +31,12 @@ The implementation intentionally avoids extra abstractions to keep the
 code simple. Supporting additional models in the future would likely
 require introducing a new abstraction layer.
 
+The main implementation struggle was getting TypeScript to work smoothly
+with streaming output while also correctly handling `SIGINT`. Python
+would probably have been the more appropriate choice for this kind of
+CLI, but I wanted to build it quickly and already had TypeScript tooling
+readily available.
+
 ## Spinner Behavior
 
 The CLI uses `yocto-spinner` instead of the `spinner` from
