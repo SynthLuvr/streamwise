@@ -82,14 +82,27 @@ const callApi = async (
   searchParams: Record<string, string>,
   controller: AbortController,
 ) => {
-  try {
-    return await api
-      .get(endpoint, { searchParams, signal: controller.signal })
-      .text();
-  } catch (e) {
-    const error = type({ message: "string" }).assert(e);
-    return error.message;
+  const callApi = async () => {
+    try {
+      return await api
+        .get(endpoint, { searchParams, signal: controller.signal })
+        .text();
+    } catch (e) {
+      const error = type({ message: "string" }).assert(e);
+      return error.message;
+    }
+  };
+
+  let response = "";
+
+  for (let i = 0; i < 3; i++) {
+    response = (await callApi()).trim();
+    if (!response || response === "{}")
+      log.warn("Received empty respone. Will retry");
+    else return response;
   }
+
+  return response;
 };
 
 const JsonArguments = type("string").pipe((v) => JSON.parse(v));
