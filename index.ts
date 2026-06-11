@@ -150,42 +150,63 @@ const streamOpenAIResponse = async (
 ): Promise<{
   outputText: string;
   output: ResponseOutputItem[];
+  cancelled: boolean;
 }> => {
-  const stream = await openai.responses.create({
-    model,
-    input,
-    tools,
-    stream: true,
-  });
+  const controller = new AbortController();
+  let cancelled = false;
+
+  const onSigint = () => {
+    cancelled = true;
+    controller.abort();
+    process.stdout.write("\nCancelled\n");
+  };
+
+  process.once("SIGINT", onSigint);
 
   let outputText = "";
   let output: ResponseOutputItem[] = [];
 
-  for await (const event of stream) {
-    switch (event.type) {
-      case "response.output_text.delta": {
-        process.stdout.write(event.delta);
-        outputText += event.delta;
-        break;
-      }
+  try {
+    const stream = await openai.responses.create(
+      {
+        model,
+        input,
+        tools,
+        stream: true,
+      },
+      { signal: controller.signal },
+    );
 
-      case "response.completed": {
-        output = event.response.output;
-        break;
-      }
+    for await (const event of stream) {
+      switch (event.type) {
+        case "response.output_text.delta": {
+          process.stdout.write(event.delta);
+          outputText += event.delta;
+          break;
+        }
 
-      case "response.failed": {
-        throw new Error(
-          event.response.error?.message ?? "OpenAI response failed",
-        );
-      }
+        case "response.completed": {
+          output = event.response.output;
+          break;
+        }
 
-      default:
-        break;
+        case "response.failed": {
+          throw new Error(
+            event.response.error?.message ?? "OpenAI response failed",
+          );
+        }
+
+        default:
+          break;
+      }
     }
+  } catch (e) {
+    if (!cancelled) throw e;
+  } finally {
+    process.off("SIGINT", onSigint);
   }
 
-  return { outputText, output };
+  return { outputText, output, cancelled };
 };
 
 const processInput = async (
@@ -195,6 +216,8 @@ const processInput = async (
 ) => {
   const currentInput: ResponseInput = [...conversation, UserMessage(prompt)];
   const firstResponse = await streamOpenAIResponse(openai, currentInput);
+
+  if (firstResponse.cancelled) return firstResponse.outputText;
 
   const inputs = firstResponse.output.filter(isCarryForwardItem);
   const toolCalls = firstResponse.output.filter(isToolCallItem);
