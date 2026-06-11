@@ -1,8 +1,8 @@
-import { isCancel, log, outro, spinner, text } from "@clack/prompts";
+import { isCancel, log, outro, text } from "@clack/prompts";
 import { type } from "arktype";
 import ky from "ky";
 import { OpenAI } from "openai";
-import pRetry from "p-retry";
+import yoctoSpinner from "yocto-spinner";
 import { tools } from "./tools";
 
 const model = "gpt-5.4-nano" as const;
@@ -80,9 +80,12 @@ const isExit = (message: string | false): message is false => {
 const callApi = async (
   endpoint: string,
   searchParams: Record<string, string>,
+  controller: AbortController,
 ) => {
   try {
-    return await pRetry(() => api.get(endpoint, { searchParams }).text());
+    return await api
+      .get(endpoint, { searchParams, signal: controller.signal })
+      .text();
   } catch (e) {
     const error = type({ message: "string" }).assert(e);
     return error.message;
@@ -97,9 +100,9 @@ const WeatherArguments = JsonArguments.pipe(
   }),
 );
 
-const runWeather = async (tool: ToolCallItem) => {
+const runWeather = async (tool: ToolCallItem, controller: AbortController) => {
   const args = WeatherArguments.assert(tool.arguments);
-  return callApi("/weather", args);
+  return callApi("/weather", args, controller);
 };
 
 const ResearchArguments = JsonArguments.pipe(
@@ -108,25 +111,31 @@ const ResearchArguments = JsonArguments.pipe(
   }),
 );
 
-const runResearch = async (tool: ToolCallItem) => {
+const runResearch = async (tool: ToolCallItem, controller: AbortController) => {
   const args = ResearchArguments.assert(tool.arguments);
   log.info(`Researching ${args.topic}`);
-  return callApi("/research", args);
+  return callApi("/research", args, controller);
 };
 
 const runTool = async (tool: ToolCallItem) => {
-  const s = spinner();
+  const s = yoctoSpinner({ handleSignals: false });
+  const controller = new AbortController();
+
+  process.on("SIGINT", () => {
+    s.stop("Cancelled");
+    controller.abort();
+  });
 
   if (tool.name === "get_weather") {
     s.start("Calling weather tool");
-    const output = await runWeather(tool);
+    const output = await runWeather(tool, controller);
     s.stop("Retrieved weather");
     return output;
   }
 
   if (tool.name === "research_topic") {
     s.start("Calling research tool");
-    const output = await runResearch(tool);
+    const output = await runResearch(tool, controller);
     s.stop("Retrieved research");
     return output;
   }
