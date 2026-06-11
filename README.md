@@ -4,6 +4,19 @@ A streaming CLI chat app that integrates LLM tool calling with
 real-world weather and research APIs, including pending states,
 cancellation, and graceful handling of messy API behavior.
 
+## Requirements
+
+- [Node.js](https://nodejs.org/) 24
+- [pnpm](https://pnpm.io/) 11.5.3
+
+## Setup
+
+Install dependencies:
+
+``` bash
+pnpm install
+```
+
 ## Usage
 
 Before running the CLI, make sure the following environment variables
