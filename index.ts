@@ -1,8 +1,8 @@
 import { isCancel, log, outro, spinner, text } from "@clack/prompts";
 import { type } from "arktype";
-import ky, { HTTPError } from "ky";
+import ky from "ky";
 import { OpenAI } from "openai";
-import pRetry, { AbortError } from "p-retry";
+import pRetry from "p-retry";
 import { tools } from "./tools";
 
 const model = "gpt-5.4-nano" as const;
@@ -11,6 +11,12 @@ const api = ky.create({
   baseUrl: "https://elyos-interview-907656039105.europe-west2.run.app",
   headers: {
     "X-API-Key": process.env["ELYOS_API_KEY"] ?? "",
+  },
+  retry: {
+    backoffLimit: 1000,
+    jitter: true,
+    limit: 3,
+    retryOnTimeout: true,
   },
 });
 
@@ -76,35 +82,10 @@ const callApi = async (
   searchParams: Record<string, string>,
 ) => {
   try {
-    return await pRetry(
-      async () => {
-        try {
-          return await api.get(endpoint, { searchParams }).text();
-        } catch (error) {
-          if (error instanceof HTTPError) {
-            // Don't retry client errors, except rate limits
-            const status = error.response.status;
-            if (
-              status !== undefined &&
-              status >= 400 &&
-              status < 500 &&
-              status !== 429
-            )
-              throw new AbortError(error);
-          }
-
-          throw error;
-        }
-      },
-      {
-        retries: 3,
-        factor: 2,
-        minTimeout: 500,
-        maxTimeout: 5_000,
-      },
-    );
-  } catch {
-    return "unknown error";
+    return await pRetry(() => api.get(endpoint, { searchParams }).text());
+  } catch (e) {
+    const error = type({ message: "string" }).assert(e);
+    return error.message;
   }
 };
 
