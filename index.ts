@@ -1,4 +1,4 @@
-import { input } from "@inquirer/prompts";
+import { isCancel, text } from "@clack/prompts";
 import { type } from "arktype";
 import ky from "ky";
 import { OpenAI } from "openai";
@@ -60,11 +60,9 @@ const isToolCallItem = (item: ResponseOutputItem): item is ToolCallItem =>
   (item.name === "get_weather" || item.name === "research_topic");
 
 const getInput = async () => {
-  try {
-    return (await input({ message: "Ask anything" })).trim();
-  } catch {
-    return false;
-  }
+  const value = await text({ message: "Ask anything" });
+  if (isCancel(value)) return false;
+  return value.trim();
 };
 
 const isExit = (message: string | false): message is false => {
