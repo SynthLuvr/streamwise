@@ -190,17 +190,14 @@ const streamOpenAIResponse = async (
         }
 
         case "response.failed": {
-          throw new Error(
-            event.response.error?.message ?? "OpenAI response failed",
-          );
+          log.error(event.response.error?.message ?? "OpenAI response failed");
+          break;
         }
 
         default:
           break;
       }
     }
-  } catch (e) {
-    if (!cancelled) throw e;
   } finally {
     process.off("SIGINT", onSigint);
   }
