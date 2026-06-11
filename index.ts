@@ -1,4 +1,4 @@
-import { isCancel, text } from "@clack/prompts";
+import { isCancel, log, text } from "@clack/prompts";
 import { type } from "arktype";
 import ky from "ky";
 import { OpenAI } from "openai";
@@ -134,7 +134,7 @@ const ResearchArguments = JsonArguments.pipe(
 
 const runResearch = async (tool: ToolCallItem) => {
   const args = ResearchArguments.assert(tool.arguments);
-  console.debug("Researching", args.topic);
+  log.info(`Researching ${args.topic}`);
   return callApi("/research", args);
 };
 
@@ -229,14 +229,14 @@ const processInput = async (
 const main = async () => {
   const elyosApiKey = type("string > 0")(process.env["ELYOS_API_KEY"]);
   if (elyosApiKey instanceof type.errors) {
-    console.error("ELYOS_API_KEY environment variable", elyosApiKey.summary);
+    log.error(`ELYOS_API_KEY environment variable ${elyosApiKey.summary}`);
     process.exitCode = 1;
     return;
   }
 
   const apiKey = OpenAIApiKey(process.env["OPENAI_API_KEY"]);
   if (apiKey instanceof type.errors) {
-    console.error("OPENAI_API_KEY environment variable", apiKey.summary);
+    log.error(`OPENAI_API_KEY environment variable ${apiKey.summary}`);
     process.exitCode = 1;
     return;
   }
