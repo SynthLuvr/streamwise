@@ -6,6 +6,14 @@ cancellation, and graceful handling of messy API behavior.
 
 ## Usage
 
+Before running the CLI, make sure the following environment variables
+are set:
+
+``` bash
+ELYOS_API_KEY=...
+OPENAI_API_KEY=...
+```
+
 Run the CLI with:
 
 ``` bash
