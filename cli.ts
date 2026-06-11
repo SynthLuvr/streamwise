@@ -73,8 +73,7 @@ const getInput = async () => {
 
 const isExit = (message: string | false): message is false => {
   if (message === false) return true;
-  if (["", "quit", "exit", "q"].includes(message)) return true;
-  return false;
+  return ["", "quit", "exit", "q"].includes(message);
 };
 
 const callApi = async (
