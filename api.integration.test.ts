@@ -3,6 +3,7 @@ import { describe, expect, it } from "vitest";
 const BASE_URL = "https://elyos-interview-907656039105.europe-west2.run.app";
 const API_KEY = process.env["ELYOS_API_KEY"] ?? "";
 const noKey = !API_KEY;
+const REQUEST_TIMEOUT_MS = 30_000;
 
 // Helper: raw fetch with full control over headers and params
 const get = async (
@@ -15,7 +16,7 @@ const get = async (
   const start = Date.now();
   const res = await fetch(url.toString(), {
     headers,
-    signal: AbortSignal.timeout(30_000),
+    signal: AbortSignal.timeout(REQUEST_TIMEOUT_MS),
   });
   const body = await res.text();
   return { status: res.status, body, ms: Date.now() - start };
