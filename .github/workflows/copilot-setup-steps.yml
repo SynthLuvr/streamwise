@@ -28,8 +28,10 @@ jobs:
           node-version: "24"
           cache: "pnpm"
 
+      - name: Expose secrets to environment
+        run: |
+          echo "ELYOS_API_KEY=${{ secrets.ELYOS_API_KEY }}" >> $GITHUB_ENV
+          echo "OPENAI_API_KEY=${{ secrets.OPENAI_API_KEY }}" >> $GITHUB_ENV
+
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
-        env:
-          ELYOS_API_KEY: ${{ secrets.ELYOS_API_KEY }}
-          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
