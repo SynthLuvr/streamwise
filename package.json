@@ -18,7 +18,8 @@
     "lint:oxlint": "pnpm oxlint .",
     "lint": "npm-run-all lint:biome lint:oxlint",
     "strip-braces": "pnpm exec sg scan --rule .ast-grep/rules/strip-braces.yml -U",
-    "test": "pnpm vitest run"
+    "test": "pnpm vitest run",
+    "test:experiments": "pnpm vitest run research.experiment.ts"
   },
   "dependencies": {
     "@clack/prompts": "^1.5.1",
