@@ -94,7 +94,7 @@ const callApi = async (
   for (let i = 0; i < 3; i++) {
     response = (await callApi()).trim();
     if (!response || response === "{}")
-      log.warn("Received empty respone. Will retry");
+      log.warn("Received empty response. Will retry");
     else return response;
   }
 
