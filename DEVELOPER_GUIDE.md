@@ -9,7 +9,7 @@
 Interactive command-line chat application that:
 
 - Accepts free-text prompts in a REPL-style loop.
-- Sends the conversation to **OpenAI’s Responses API** (`gpt-5.4-nano`)
+- Sends the conversation to **OpenAI’s Responses API** (`gpt-4.1-nano`)
   with streaming.
 - Lets the LLM call **two external tools** — weather and research —
   backed by a remote API.
@@ -154,7 +154,7 @@ are dropped.
 
 #### 6.2 Constants & Config (lines 23–36)
 
-- **Model**: `gpt-5.4-nano`
+- **Model**: `gpt-4.1-nano`
 - **Base URL**:
   `https://elyos-interview-907656039105.europe-west2.run.app`
 - **Auth**: `X-API-Key` header from `ELYOS_API_KEY`

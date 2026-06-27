@@ -20,7 +20,7 @@ type Message = {
   content: string;
 };
 
-const model = "gpt-5.4-nano" as const;
+const model = "gpt-4.1-nano" as const;
 
 const api = ky.create({
   baseUrl: "https://elyos-interview-907656039105.europe-west2.run.app",
