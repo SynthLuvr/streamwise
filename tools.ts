@@ -1,6 +1,6 @@
 import type OpenAI from "openai";
 
-export const tools: OpenAI.Responses.Tool[] = [
+const tools: OpenAI.Responses.Tool[] = [
   {
     type: "function",
     name: "get_weather",
@@ -38,3 +38,5 @@ export const tools: OpenAI.Responses.Tool[] = [
     strict: true,
   },
 ];
+
+export { tools };
