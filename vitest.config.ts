@@ -1,5 +1,7 @@
 import { defineConfig } from "vitest/config";
 
-export default defineConfig({
+const config = defineConfig({
   test: {},
 });
+
+export { config as default };

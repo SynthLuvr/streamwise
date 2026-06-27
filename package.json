@@ -16,8 +16,10 @@
     "format": "npm-run-all format:arrows format:braces format:biome format:check",
     "lint:biome": "pnpm biome format .",
     "lint:oxlint": "pnpm oxlint .",
-    "lint": "npm-run-all lint:biome lint:oxlint",
+    "lint": "npm-run-all lint:biome lint:oxlint lint:exports lint:functions",
     "strip-braces": "pnpm exec sg scan --rule .ast-grep/rules/strip-braces.yml -U",
+    "lint:exports": "pnpm exec sg scan --rule .ast-grep/rules/no-inline-export.yml --error=no-inline-export --globs '!**/*.d.ts' .",
+    "lint:functions": "pnpm exec sg scan --rule .ast-grep/rules/no-function-declaration.yml --error=no-function-declaration --globs '!**/*.d.ts' .",
     "test": "pnpm vitest run"
   },
   "dependencies": {
@@ -30,14 +32,15 @@
   },
   "devDependencies": {
     "@ast-grep/cli": "^0.43.0",
-    "@biomejs/biome": "^2.4.16",
-    "@types/node": "^25.9.2",
-    "convert-to-arrow": "^1.0.21",
-    "npm-run-all2": "^9.0.1",
-    "oxlint": "^1.69.0",
+    "@ast-grep/cli-linux-x64-gnu": "^0.43.0",
+    "@biomejs/biome": "^2.5.0",
+    "@types/node": "^26.0.0",
+    "convert-to-arrow": "^1.1.4",
+    "npm-run-all2": "^9.0.2",
+    "oxlint": "^1.70.0",
     "oxlint-tsgolint": "^0.23.0",
     "tsx": "^4.22.4",
     "typescript": "^6.0.3",
-    "vitest": "^4.1.8"
+    "vitest": "^4.1.9"
   }
 }
